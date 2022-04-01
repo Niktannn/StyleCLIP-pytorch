@@ -97,7 +97,7 @@ class Manipulator():
         """
         assert inv_mode in ['w', 'w+']
         assert pti_mode in [None, 'w', 's']
-        allowed_extensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG']
+        allowed_extensions = ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG', 'pt']
 
         # img directory input
         if os.path.isdir(img):
@@ -146,14 +146,22 @@ class Manipulator():
             # use e4e encoder
             target_pils = list()
             for imgpath in imgpaths:
-                if self.face_preprocess:
-                    target_pil = self.landmarks_detector(imgpath)
-                else:
+                # if self.face_preprocess:
+                #     target_pil = self.landmarks_detector(imgpath)
+                # else:
+                #     target_pil = PIL.Image.open(imgpath).convert('RGB')
+                if imgpath.split('.')[-1] in ['jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG']:
                     target_pil = PIL.Image.open(imgpath).convert('RGB')
-                target_pils.append(target_pil)
+                    target_pils.append(target_pil)
 
-            self.encoder = e4eEncoder(self.device)
-            self.latent = self.encoder(target_pils)
+            # self.encoder = e4eEncoder(self.device)
+
+            latents = list()
+            for imgpath in imgpaths:
+                if imgpath.split('.')[-1] in ['pt']:
+                    latents.append(torch.load(imgpath))
+            latents = torch.cat(latents)
+            self.latent = latents
             self.styles = self.G.mapping_stylespace(self.latent)
 
         if pti_mode is not None: # w or s
